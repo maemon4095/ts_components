@@ -1,8 +1,9 @@
 export type ParseOptions = { keyMatcher: (arg: string) => boolean };
+export type ParseResult = { defaults: string[], mapping: { [key: string]: string[] } };
 
 export const defaultParseOptions: ParseOptions = { keyMatcher: (arg) => arg.startsWith('-') };
 
-export default function parse(args: string[], options?: ParseOptions): { defaults: string[], mapping: { [key: string]: string[] } } {
+export default function parse(args: string[], options?: ParseOptions): ParseResult {
     const defaults = [] as string[];
     const mapping = {};
     const opts = { ...defaultParseOptions, ...options };
