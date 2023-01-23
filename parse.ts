@@ -1,4 +1,4 @@
-import { Optional, deepCoalesce } from "./utilities";
+import { Optional, deepCoalesce } from "./utilities.ts";
 
 export type KeyOptions = {
     acceptsManyValue?: boolean,

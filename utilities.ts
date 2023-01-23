@@ -15,11 +15,11 @@ export function deepCoalesce<T>(value: Optional<T>, defaults: T): T {
         return value;
     }
 
-    const obj: any = {};
+    const obj: Partial<T> = {};
     for (const key of getOwnKeysOf(defaults)) {
         obj[key] = deepCoalesce(value[key], defaults[key]);
     }
-    return obj;
+    return obj as T;
 }
 
 export function coalesce<T>(value: T, defaults: Required<T>): Required<T> {
