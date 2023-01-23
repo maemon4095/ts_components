@@ -3,7 +3,7 @@ export type ParseResult = { defaults: string[], mapping: { [key: string]: string
 
 export const defaultParseOptions: ParseOptions = { keyMatcher: (arg) => arg.startsWith('-') };
 
-export default function parse(args: string[], options?: ParseOptions): ParseResult {
+export function parse(args: string[], options?: ParseOptions): ParseResult {
     const defaults = [] as string[];
     const mapping = {};
     const opts = { ...defaultParseOptions, ...options };
