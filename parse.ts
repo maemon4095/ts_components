@@ -1,17 +1,37 @@
-export type ParseOptions = { keyMatcher: (arg: string) => boolean };
-export type ParseResult = { defaults: string[], mapping: { [key: string]: string[] } };
+import { Optional, deepCoalesce } from "./utilities";
 
-export const defaultParseOptions: ParseOptions = { keyMatcher: (arg) => arg.startsWith('-') };
+export type KeyOptions = {
+    acceptsManyValue?: boolean,
+};
 
-export function parse(args: string[], options?: ParseOptions): ParseResult {
+export type ParseOptions = {
+    keyMatcher: (arg: string) => boolean,
+    defaultKeyOptions: KeyOptions,
+    keySpecificOptions: {
+        [key: string]: KeyOptions | undefined;
+    };
+};
+export type ParseResult = { defaults: string[], mapping: { [key: string]: string[]; }; };
+
+export const defaultParseOptions: ParseOptions = {
+    keyMatcher: (arg: string) => arg.startsWith('-'),
+    defaultKeyOptions: {
+        acceptsManyValue: false,
+    },
+    keySpecificOptions: {}
+};
+
+export function parse(args: string[], options?: Optional<ParseOptions>): ParseResult {
     const defaults = [] as string[];
-    const mapping = {};
-    const opts = { ...defaultParseOptions, ...options };
+    const mapping: { [key: string]: string[]; } = {};
+    const { keyMatcher, defaultKeyOptions, keySpecificOptions } = deepCoalesce(options, defaultParseOptions);
 
     let key: string | null = null;
+    let keyOptions = defaultKeyOptions;
     for (const arg of args) {
-        if (opts.keyMatcher(arg)) {
+        if (keyMatcher(arg)) {
             key = arg;
+            keyOptions = deepCoalesce(keySpecificOptions[key], defaultKeyOptions);
             if (!mapping[key]) {
                 mapping[key] = [];
             }
@@ -22,8 +42,9 @@ export function parse(args: string[], options?: ParseOptions): ParseResult {
         } else {
             mapping[key].push(arg);
         }
-        key = null;
+        if (!keyOptions.acceptsManyValue) {
+            key = null;
+        }
     }
-
     return { defaults, mapping };
 }
