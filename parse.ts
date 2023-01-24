@@ -3,7 +3,6 @@ import { Optional, deepCoalesce } from "./utilities.ts";
 export type KeyOptions = {
     acceptsManyValue?: boolean,
 };
-
 export type ParseOptions = {
     keyMatcher: (arg: string) => boolean,
     defaultKeyOptions: KeyOptions,
