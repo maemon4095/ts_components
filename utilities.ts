@@ -17,7 +17,6 @@ export function deepCoalesce<T>(value: Optional<T>, defaults: T): T {
 
     // if value is not created from object literal, it is leaf and should not coalesced
     if (Object.getPrototypeOf(defaults) !== Object.prototype) {
-        console.log(defaults, Object.getPrototypeOf(defaults) === Object.prototype);
         if (value !== null || value !== undefined) {
             return value as T;
         }
