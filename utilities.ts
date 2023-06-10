@@ -15,16 +15,22 @@ export function deepCoalesce<T>(value: Optional<T>, defaults: T): T {
         return value as T;
     }
 
-    if (typeof value !== "object") {
-        return value;
+    // if value is not created from object literal, it is leaf and should not coalesced
+    if (Object.getPrototypeOf(defaults) !== Object.prototype) {
+        console.log(defaults, Object.getPrototypeOf(defaults) === Object.prototype);
+        if (value !== null || value !== undefined) {
+            return value as T;
+        }
+        return defaults;
     }
+    
     const obj: Partial<T> = {};
-    const keys = getOwnKeysOf(value).concat(getOwnKeysOf(defaults) as (keyof T)[]);
+    const keys = getOwnKeysOf(defaults);
     for (const key of keys) {
-        if (obj[key] !== undefined) {
+        if (obj[key as any] !== undefined) {
             continue;
         }
-        obj[key] = deepCoalesce(value[key], defaults[key]);
+        obj[key as any] = coalesce(value[key as any], defaults[key]);
     }
     return obj as T;
 }
