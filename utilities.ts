@@ -7,7 +7,7 @@ export type Optional<T> = {
     [P in keyof T]?: Optional<T[P]>
 } | undefined;
 
-export function deepCoalesce<T>(value: Optional<T>, defaults: T): T {
+export function coalesce<T>(value: Optional<T>, defaults: T): T {
     if (value === undefined || value === null) {
         return defaults;
     }
@@ -34,9 +34,6 @@ export function deepCoalesce<T>(value: Optional<T>, defaults: T): T {
     return obj as T;
 }
 
-export function coalesce<T>(value: Partial<T>, defaults: T): T {
-    return { ...value, ...defaults };
-}
 
 function getOwnKeysOf<T>(obj: T): (keyof T)[] {
     if (obj === null || obj === undefined) {
