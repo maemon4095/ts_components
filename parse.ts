@@ -1,4 +1,4 @@
-import { Optional, deepCoalesce } from "./utilities.ts";
+import { Optional, coalesce } from "./utilities.ts";
 
 export type KeyOptions = {
     acceptsManyValue?: boolean,
@@ -30,7 +30,7 @@ export function parse(args: string[], options?: Optional<ParseOptions>): ParseRe
     for (const arg of args) {
         if (keyMatcher(arg)) {
             key = arg;
-            keyOptions = deepCoalesce(keySpecificOptions[key], defaultKeyOptions);
+            keyOptions = coalesce(keySpecificOptions[key], defaultKeyOptions);
             if (!mapping[key]) {
                 mapping[key] = [];
             }
