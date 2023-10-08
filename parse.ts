@@ -23,7 +23,7 @@ export const defaultParseOptions: ParseOptions = {
 export function parse(args: string[], options?: Optional<ParseOptions>): ParseResult {
     const defaults = [] as string[];
     const mapping: { [key: string]: string[]; } = {};
-    const { keyMatcher, defaultKeyOptions, keySpecificOptions } = deepCoalesce(options, defaultParseOptions);
+    const { keyMatcher, defaultKeyOptions, keySpecificOptions } = coalesce(options, defaultParseOptions);
 
     let key: string | null = null;
     let keyOptions = defaultKeyOptions;
