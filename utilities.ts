@@ -8,30 +8,37 @@ export type Optional<T> = {
 } | undefined;
 
 export function coalesce<T>(value: Optional<T>, defaults: T): T {
-    if (value === undefined || value === null) {
+    if (value === undefined) {
         return defaults;
     }
-    if (defaults === undefined || defaults === null) {
+    if (value === null) {
+        return value;
+    }
+
+    if (defaults === undefined) {
         return value as T;
     }
 
     // if value is not created from object literal, it is leaf and should not coalesced
     if (Object.getPrototypeOf(defaults) !== Object.prototype) {
-        if (value !== null || value !== undefined) {
+        if (value !== undefined) {
             return value as T;
         }
         return defaults;
     }
-    
-    const obj: Partial<T> = {};
-    const keys = getOwnKeysOf(defaults);
+
+    if (defaults === null) {
+        return value as T;
+    }
+
+    const keys = getOwnKeysOf(defaults as T);
     for (const key of keys) {
-        if (obj[key as any] !== undefined) {
+        if (value[key] !== undefined) {
             continue;
         }
-        obj[key as any] = coalesce(value[key as any], defaults[key]);
+        value[key] = coalesce(value[key], defaults[key]);
     }
-    return obj as T;
+    return value as T;
 }
 
 
