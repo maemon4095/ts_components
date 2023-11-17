@@ -1,3 +1,6 @@
+export const SymbolEquals: unique symbol = Symbol();
+export type Equatable<T> = T & { [SymbolEquals](value: T): unknown; };
+
 export function equals<T>(left: T, right: T): boolean {
     if (left === right) {
         return true;
@@ -10,6 +13,10 @@ export function equals<T>(left: T, right: T): boolean {
     // since left !== right, if one is null, then the other never be null.
     if (left === null || right === null) {
         return false;
+    }
+
+    if (isEquatable(left)) {
+        return !!(left[SymbolEquals](right));
     }
 
     if (left.constructor !== right.constructor) {
@@ -59,6 +66,13 @@ export function* delta<T>(old: T, now: T): Generator<Delta<T>> {
         return;
     }
 
+    if (isEquatable(old)) {
+        if (!(old[SymbolEquals](now))) {
+            yield self("modify");
+        }
+        return;
+    }
+
     if (old.constructor !== old.constructor) {
         yield self("modify");
         return;
@@ -88,4 +102,9 @@ function keysOf<T>(value: T): (keyof T)[] {
     const symbols = Object.getOwnPropertySymbols(value) as (keyof T)[];
 
     return names.concat(symbols);
+}
+
+function isEquatable<T>(value: T): value is Equatable<T> {
+    const comparer = (value as { [SymbolEquals]: unknown; })[SymbolEquals];
+    return comparer instanceof Function;
 }
