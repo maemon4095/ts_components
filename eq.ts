@@ -56,28 +56,3 @@ export function equals(left: unknown, right: unknown): boolean {
 // deno-lint-ignore ban-types
 type NonNullOrUndefined = {};
 function assert<T>(_v: unknown): asserts _v is T { }
-
-
-
-const obj = { a: 1 };
-
-console.log(obj.constructor === Object);
-
-class A {
-
-}
-
-const cls = new A();
-
-console.log(cls.constructor);
-
-const arr: number[] = [];
-console.log(arr.constructor);
-
-console.log(typeof arr);
-
-console.log(typeof cls);
-
-console.log(typeof undefined);
-
-console.log(typeof null);
