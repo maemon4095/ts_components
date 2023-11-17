@@ -1,18 +1,14 @@
-export function equals(left: unknown, right: unknown): boolean {
-    if (typeof left !== typeof right) {
+export function equals<T>(left: T, right: T): boolean {
+    if (left === right) {
+        return true;
+    }
+
+    if (typeof left !== "object" || typeof right !== "object") {
         return false;
     }
 
-    if (typeof left !== "object") {
-        return left === right;
-    }
-
-    assert<NonNullOrUndefined | null>(right);
-
-    if (left === null) {
-        return right === null;
-    }
-    if (right === null) {
+    // since left !== right, if one is null, then the other never be null.
+    if (left === null || right === null) {
         return false;
     }
 
@@ -21,28 +17,9 @@ export function equals(left: unknown, right: unknown): boolean {
     }
 
     if (left.constructor === Object || left.constructor === Array) {
-        // check right is left
-        for (const name of Object.getOwnPropertyNames(left) as (keyof typeof left)[]) {
-            if (!equals(left[name], right[name])) {
-                return false;
-            }
-        }
-
-        for (const name of Object.getOwnPropertySymbols(left) as (keyof typeof left)[]) {
-            if (!equals(left[name], right[name])) {
-                return false;
-            }
-        }
-
-        // check left is right
-        for (const name of Object.getOwnPropertyNames(right) as (keyof typeof right)[]) {
-            if (!equals(left[name], right[name])) {
-                return false;
-            }
-        }
-
-        for (const name of Object.getOwnPropertySymbols(right) as (keyof typeof right)[]) {
-            if (!equals(left[name], right[name])) {
+        const keys = new Set(keysOf(left).concat(keysOf(right)));
+        for (const key of keys) {
+            if (!equals(left[key], right[key])) {
                 return false;
             }
         }
@@ -50,9 +27,65 @@ export function equals(left: unknown, right: unknown): boolean {
         return true;
     }
 
-    return left === right;
+    return false;
 }
 
-// deno-lint-ignore ban-types
-type NonNullOrUndefined = {};
-function assert<T>(_v: unknown): asserts _v is T { }
+export type DeltaType = "modify" | "delete" | "new";
+export type DeltaPath<T> = T extends object ? [] | [keyof T, ...DeltaPath<T[keyof T]>] : [];
+export type Delta<T> = { path: DeltaPath<T>, type: DeltaType; };
+
+export function* delta<T>(old: T, now: T): Generator<Delta<T>> {
+    if (old === now) {
+        return;
+    }
+
+    if (old === undefined) {
+        yield self("new");
+        return;
+    }
+
+    if (now === undefined) {
+        yield self("delete");
+        return;
+    }
+
+    if (typeof old !== "object" || typeof now !== "object") {
+        yield self("modify");
+        return;
+    }
+
+    if (old === null || now === null) {
+        yield self("modify");
+        return;
+    }
+
+    if (old.constructor !== old.constructor) {
+        yield self("modify");
+        return;
+    }
+
+    if (old.constructor === Object || old.constructor === Array) {
+        const keys = new Set(keysOf(old).concat(keysOf(now)));
+
+        for (const key of keys) {
+            for (const d of delta(old[key], now[key])) {
+                yield { path: [key, ...d.path] as DeltaPath<T>, type: d.type };
+            }
+        }
+        return;
+    }
+
+    yield self("modify");
+    return;
+
+    function self<T>(type: DeltaType): Delta<T> {
+        return { path: [] as DeltaPath<T>, type };
+    }
+}
+
+function keysOf<T>(value: T): (keyof T)[] {
+    const names = Object.getOwnPropertyNames(value) as (keyof T)[];
+    const symbols = Object.getOwnPropertySymbols(value) as (keyof T)[];
+
+    return names.concat(symbols);
+}
