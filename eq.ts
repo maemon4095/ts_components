@@ -15,26 +15,26 @@ export function equals<T>(left: T, right: T): boolean {
         return false;
     }
 
-    if (isEquatable(left)) {
-        return !!(left[SymbolEquals](right));
-    }
-
     if (left.constructor !== right.constructor) {
         return false;
     }
 
-    if (left.constructor === Object || left.constructor === Array) {
-        const keys = new Set(keysOf(left).concat(keysOf(right)));
-        for (const key of keys) {
-            if (!equals(left[key], right[key])) {
-                return false;
-            }
-        }
-
-        return true;
+    if (isEquatable(left)) {
+        return !!(left[SymbolEquals](right));
     }
 
-    return false;
+    if (left.constructor !== Object && left.constructor !== Array) {
+        return false;
+    }
+
+    const keys = new Set(keysOf(left).concat(keysOf(right)));
+    for (const key of keys) {
+        if (!equals(left[key], right[key])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 export type DeltaType = "modify" | "delete" | "new";
@@ -42,6 +42,10 @@ export type DeltaPath<T> = T extends object ? [] | [keyof T, ...DeltaPath<T[keyo
 export type Delta<T> = { path: DeltaPath<T>, type: DeltaType; };
 
 export function* delta<T>(old: T, now: T): Generator<Delta<T>> {
+    yield* deltaLimited(Number.POSITIVE_INFINITY, old, now);
+}
+
+export function* deltaLimited<T>(depth: number, old: T, now: T): Generator<Delta<T>> {
     if (old === now) {
         return;
     }
@@ -66,6 +70,11 @@ export function* delta<T>(old: T, now: T): Generator<Delta<T>> {
         return;
     }
 
+    if (old.constructor !== old.constructor) {
+        yield self("modify");
+        return;
+    }
+
     if (isEquatable(old)) {
         if (!(old[SymbolEquals](now))) {
             yield self("modify");
@@ -73,23 +82,25 @@ export function* delta<T>(old: T, now: T): Generator<Delta<T>> {
         return;
     }
 
-    if (old.constructor !== old.constructor) {
+    if (old.constructor !== Object && old.constructor !== Array) {
         yield self("modify");
         return;
     }
 
-    if (old.constructor === Object || old.constructor === Array) {
-        const keys = new Set(keysOf(old).concat(keysOf(now)));
-
-        for (const key of keys) {
-            for (const d of delta(old[key], now[key])) {
-                yield { path: [key, ...d.path] as DeltaPath<T>, type: d.type };
-            }
+    if (depth <= 0) {
+        if (!equals(old, now)) {
+            yield self("modify");
         }
         return;
     }
 
-    yield self("modify");
+    const keys = new Set(keysOf(old).concat(keysOf(now)));
+
+    for (const key of keys) {
+        for (const d of deltaLimited(depth - 1, old[key], now[key])) {
+            yield { path: [key, ...d.path] as DeltaPath<T>, type: d.type };
+        }
+    }
     return;
 
     function self<T>(type: DeltaType): Delta<T> {
