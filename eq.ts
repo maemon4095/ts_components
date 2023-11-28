@@ -37,9 +37,32 @@ export function equals<T>(left: T, right: T): boolean {
     return true;
 }
 
+
+export type Path<T> = T extends object ? [] | ({
+    [key in keyof T]: [key, ...Path<T[key]>]
+}[keyof T]) : [];
+
+export type Member<T, P extends Path<T>> =
+    P extends [infer X extends keyof T, ...infer R]
+    ? (R extends Path<T[X]> ? Member<T[X], R> : never)
+    : T;
+
+
+export function assign<T, P extends Path<T> & [keyof T]>(target: T, path: P, value: Member<T, P>) {
+    const last = path.pop();
+
+    // deno-lint-ignore no-explicit-any
+    let tmp: any = target;
+    for (const p of path) {
+        tmp = tmp[p];
+    }
+
+    tmp[last] = value;
+}
+
+
 export type DeltaType = "modify" | "delete" | "new";
-export type DeltaPath<T> = T extends object ? [] | [keyof T, ...DeltaPath<T[keyof T]>] : [];
-export type Delta<T> = { path: DeltaPath<T>, type: DeltaType; };
+export type Delta<T> = { path: Path<T>, type: DeltaType; };
 
 export function* delta<T>(old: T, now: T): Generator<Delta<T>> {
     yield* deltaLimited(Number.POSITIVE_INFINITY, old, now);
@@ -98,13 +121,13 @@ export function* deltaLimited<T>(depth: number, old: T, now: T): Generator<Delta
 
     for (const key of keys) {
         for (const d of deltaLimited(depth - 1, old[key], now[key])) {
-            yield { path: [key, ...d.path] as DeltaPath<T>, type: d.type };
+            yield { path: [key, ...d.path] as Path<T>, type: d.type };
         }
     }
     return;
 
     function self<T>(type: DeltaType): Delta<T> {
-        return { path: [] as DeltaPath<T>, type };
+        return { path: [] as Path<T>, type };
     }
 }
 
