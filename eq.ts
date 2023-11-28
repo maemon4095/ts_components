@@ -48,7 +48,7 @@ export type Member<T, P extends Path<T>> =
     : T;
 
 
-export function assign<T, P extends Path<T> & [keyof T]>(target: T, path: P, value: Member<T, P>) {
+export function assign<T, P extends Path<T> & [keyof T, ...unknown[]]>(target: T, path: P, value: Member<T, P>) {
     const last = path.pop();
 
     // deno-lint-ignore no-explicit-any
