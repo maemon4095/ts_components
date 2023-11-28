@@ -48,11 +48,12 @@ export type Member<T, P extends Path<T>> =
     : T;
 
 export function assign<T, P extends Path<T> & [keyof T, ...unknown[]]>(target: T, path: P, value: Member<T, P>) {
-    const last = path.pop();
+    const pathClone = new Array(...path);
+    const last = pathClone.pop();
 
     // deno-lint-ignore no-explicit-any
     let tmp: any = target;
-    for (const p of path) {
+    for (const p of pathClone) {
         tmp = tmp[p];
     }
 
