@@ -47,7 +47,6 @@ export type Member<T, P extends Path<T>> =
     ? (R extends Path<T[X]> ? Member<T[X], R> : never)
     : T;
 
-
 export function assign<T, P extends Path<T> & [keyof T, ...unknown[]]>(target: T, path: P, value: Member<T, P>) {
     const last = path.pop();
 
@@ -60,6 +59,14 @@ export function assign<T, P extends Path<T> & [keyof T, ...unknown[]]>(target: T
     tmp[last] = value;
 }
 
+export function access<T, P extends Path<T>>(target: T, path: P): Member<T, P> {
+    // deno-lint-ignore no-explicit-any
+    let tmp: any = target;
+    for (const p of path) {
+        tmp = tmp[p];
+    }
+    return tmp;
+}
 
 export type DeltaType = "modify" | "delete" | "new";
 export type Delta<T> = { path: Path<T>, type: DeltaType; };
