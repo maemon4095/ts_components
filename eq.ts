@@ -119,3 +119,4 @@ function isEquatable<T>(value: T): value is Equatable<T> {
     const comparer = (value as { [SymbolEquals]: unknown; })[SymbolEquals];
     return comparer instanceof Function;
 }
+
