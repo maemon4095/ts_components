@@ -1,13 +1,10 @@
 type MaybeMember<T, K> = K extends keyof T ? T[K] : undefined;
-
+// type IsClassWithPrivateField<T> = { [key in keyof T]: T[key] } extends T ? false : true;
 
 export type Coalesced<T, U> =
     T extends undefined ? U :
-    // deno-lint-ignore ban-types
-    T extends { ["constructor"]: Function; } ? T :
-    // deno-lint-ignore ban-types
-    U extends { ["constructor"]: Function; } ? T :
-    T & { [key in Exclude<keyof U, keyof T>]: Coalesced<MaybeMember<T, key>, U[key]> };
+    U extends undefined | null ? T :
+    { [key in (keyof U | keyof T)]: Coalesced<MaybeMember<T, key>, MaybeMember<U, key>> };
 
 export function coalesce<T, U>(value: T, defaults: U): Coalesced<T, U> {
     if (value === undefined) {
@@ -18,10 +15,12 @@ export function coalesce<T, U>(value: T, defaults: U): Coalesced<T, U> {
         return value as Coalesced<T, U>;
     }
 
+    /* 型が付けられないため断念． 未練をここに残しておく． 
     // if value is not created from object literal, it is leaf and should not coalesced
     if (Object.getPrototypeOf(value) !== Object.prototype || Object.getPrototypeOf(defaults) !== Object.prototype) {
         return value as Coalesced<T, U>;
     }
+    */
 
     // deno-lint-ignore no-explicit-any
     const result: any = { ...value };
