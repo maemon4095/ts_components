@@ -38,4 +38,12 @@ Deno.test("coalesce", async (ctx) => {
 
         assertEquals(output, { a: "a", b: { c: "putty" } });
     });
+
+    await ctx.step("array", () => {
+        const putty = { b: { c: "putty" } };
+        const input = { a: "a", b: [] };
+        const output = coalesce(input, putty);
+
+        assertEquals(output, { a: "a", b: [] });
+    });
 });

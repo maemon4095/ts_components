@@ -8,6 +8,8 @@ export type Coalesced<T, U> =
     U extends undefined | null ? T :
     T extends Primitive ? T :
     U extends Primitive ? T :
+    T extends unknown[] ? T :
+    U extends unknown[] ? T :
     { [key in (keyof U | keyof T)]: Coalesced<MaybeMember<T, key>, MaybeMember<U, key>> };
 
 export function coalesce<T, U>(value: T, defaults: U): Coalesced<T, U> {
@@ -27,6 +29,10 @@ export function coalesce<T, U>(value: T, defaults: U): Coalesced<T, U> {
     */
 
     if (typeof value !== "object" || typeof defaults !== "object") {
+        return value as Coalesced<T, U>;
+    }
+
+    if (Array.isArray(value) || Array.isArray(defaults)) {
         return value as Coalesced<T, U>;
     }
 
