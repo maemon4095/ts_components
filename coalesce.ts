@@ -1,9 +1,13 @@
 type MaybeMember<T, K> = K extends keyof T ? T[K] : undefined;
 // type IsClassWithPrivateField<T> = { [key in keyof T]: T[key] } extends T ? false : true;
 
+type Primitive = undefined | null | number | string | bigint | symbol;
+
 export type Coalesced<T, U> =
     T extends undefined ? U :
     U extends undefined | null ? T :
+    T extends Primitive ? T :
+    U extends Primitive ? T :
     { [key in (keyof U | keyof T)]: Coalesced<MaybeMember<T, key>, MaybeMember<U, key>> };
 
 export function coalesce<T, U>(value: T, defaults: U): Coalesced<T, U> {
@@ -21,6 +25,10 @@ export function coalesce<T, U>(value: T, defaults: U): Coalesced<T, U> {
         return value as Coalesced<T, U>;
     }
     */
+
+    if (typeof value !== "object" || typeof defaults !== "object") {
+        return value as Coalesced<T, U>;
+    }
 
     // deno-lint-ignore no-explicit-any
     const result: any = { ...value };
