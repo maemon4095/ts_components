@@ -4,15 +4,16 @@ import { assertEquals } from "https://deno.land/std@0.215.0/assert/assert_equals
 import * as mod from "./scheme.ts";
 import { rawParse } from "./raw_parse.ts";
 import { ArgsScheme } from "./scheme.ts";
+import * as pat from "./patterns.ts";
 
 Deno.test("type", () => {
     const scheme = {
-        positional: ["subcommand", mod.optional(mod.url)],
+        positional: ["subcommand", pat.optional(pat.url)],
         options: {
-            "-a": mod.optional(mod.url),
-            "-b": mod.choice("a", mod.url),
-            "-c": mod.str,
-            "-d": mod.int
+            "-a": pat.optional(pat.url),
+            "-b": pat.choice("a", pat.url),
+            "-c": pat.str,
+            "-d": pat.int
         }
     } as const satisfies mod.ArgsScheme;
 
@@ -35,22 +36,22 @@ Deno.test("matches", () => {
     assertThrows(() => {
         mod.matches("aaa", "bbb");
     });
-    mod.matches(mod.int, "0");
+    mod.matches(pat.int, "0");
     assertThrows(() => {
-        mod.matches(mod.int, "bbb");
+        mod.matches(pat.int, "bbb");
     });
 
-    assertEquals(mod.matches(mod.optional("aaa"), "bbb"), null);
+    assertEquals(mod.matches(pat.optional("aaa"), "bbb"), null);
 });
 
 Deno.test("validateInto", () => {
     const scheme = {
-        positional: ["subcommand", mod.optional(mod.url)],
+        positional: ["subcommand", pat.optional(pat.url)],
         options: {
-            "-a": mod.optional(mod.url),
-            "-b": mod.choice("a", mod.url),
-            "-c": mod.str,
-            "-d": mod.int
+            "-a": pat.optional(pat.url),
+            "-b": pat.choice("a", pat.url),
+            "-c": pat.str,
+            "-d": pat.int
         }
     } as const satisfies ArgsScheme;
 
