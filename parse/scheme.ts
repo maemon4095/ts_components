@@ -30,7 +30,7 @@ export function validateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Ar
     if (positionalScheme instanceof Array) {
         const p = [];
         if (positional.length > positionalScheme.length) {
-            throw new Error();
+            throw new UnexpectetPositionalArgumentError();
         }
 
         for (let i = 0; i < positionalScheme.length; ++i) {
@@ -40,7 +40,7 @@ export function validateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Ar
         positionalOut = p;
     } else {
         if (positional.length > 1) {
-            throw new Error();
+            throw new UnexpectetPositionalArgumentError();
         }
 
         positionalOut = matches(positionalScheme, positional[0]);
@@ -59,6 +59,10 @@ export function validateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Ar
         positional: positionalOut,
         options: optionsOut
     } as Args<S>;
+}
+
+export class UnexpectetPositionalArgumentError extends Error {
+    message = "unexpected positional argument";
 }
 
 /** if arg is undefined, it means no such argument given.
