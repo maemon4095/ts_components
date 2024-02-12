@@ -5,6 +5,7 @@ import * as mod from "./scheme.ts";
 import { rawParse } from "./raw_parse.ts";
 import { ArgsScheme } from "./scheme.ts";
 import * as pat from "./patterns.ts";
+import { ArgsSchemes } from "./scheme.ts";
 
 Deno.test("type", () => {
     const scheme = {
@@ -44,7 +45,7 @@ Deno.test("matches", () => {
     assertEquals(mod.matches(pat.optional("aaa"), "bbb"), null);
 });
 
-Deno.test("validateInto", () => {
+Deno.test("singleValidateInto", () => {
     const scheme = {
         positional: ["subcommand", pat.optional(pat.url)],
         options: {
@@ -57,7 +58,7 @@ Deno.test("validateInto", () => {
 
     const raw = rawParse(["subcommand", "-b=a", "-c=str", "-d=0"]);
 
-    const result = mod.validateInto(scheme, raw);
+    const result = mod.singleValidateInto(scheme, raw);
 
     assertEquals(result, {
         positional: ["subcommand", null],
@@ -70,3 +71,35 @@ Deno.test("validateInto", () => {
     });
 });
 
+
+Deno.test("validateInto", () => {
+    const scheme = {
+        case0: {
+            positional: ["command", pat.optional(pat.url)],
+            options: {}
+        },
+        case1: {
+            positional: ["subcommand", pat.optional(pat.url)],
+            options: {
+                "-a": pat.optional(pat.url),
+                "-b": pat.choice("a", pat.url),
+                "-c": pat.str,
+                "-d": pat.int
+            }
+        }
+    } as const satisfies ArgsSchemes;
+
+    const raw = rawParse(["subcommand", "-b=a", "-c=str", "-d=0"]);
+
+    const result = mod.validateInto(scheme, raw);
+
+    assertEquals(result, ["case1", {
+        positional: ["subcommand", null],
+        options: {
+            "-a": null,
+            "-b": "a",
+            "-c": "str",
+            "-d": 0
+        }
+    }]);
+});

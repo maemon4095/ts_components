@@ -21,7 +21,7 @@ export class StringLiteralExpectedError extends Error {
     }
 }
 
-export function validateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Args<S> {
+export function singleValidateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Args<S> {
     const { positional: positionalScheme, options: optionsScheme } = scheme;
     const { positional, options } = args;
     let positionalOut;
@@ -61,6 +61,19 @@ export function validateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Ar
     } as Args<S>;
 }
 
+export function validateInto<S extends ArgsSchemes>(schemes: S, args: RawArgs): OneOfArgs<S> {
+    let last_err;
+    for (const name in schemes) {
+        const scheme = schemes[name];
+        try {
+            return [name, singleValidateInto(scheme, args)] as unknown as OneOfArgs<S>;
+        } catch (e) {
+            last_err = e;
+        }
+    }
+    throw last_err;
+}
+
 export class UnexpectetPositionalArgumentError extends Error {
     message = "unexpected positional argument";
 }
@@ -71,9 +84,15 @@ export class UnexpectetPositionalArgumentError extends Error {
  */
 export type Pattern = string | ((arg: string | undefined | null) => unknown);
 export type ArgsScheme = {
-    positional: Pattern | readonly Pattern[];
-    options: { [key: `-${string}`]: Pattern; };
+    readonly positional: Pattern | readonly Pattern[];
+    readonly options: { readonly [key: `-${string}`]: Pattern; };
 };
+
+export type ArgsSchemes = {
+    readonly [name: string]: ArgsScheme;
+};
+
+export type OneOfArgs<S extends ArgsSchemes> = { [name in keyof S]: [name, Args<S[name]>] }[keyof S];
 
 export type Args<T extends ArgsScheme> = {
     positional: Match<T["positional"]>;
