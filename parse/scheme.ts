@@ -63,13 +63,14 @@ export function singleValidateInto<S extends ArgsScheme>(scheme: S, args: RawArg
 
 export function validateInto<S extends ArgsSchemes>(schemes: S, args: RawArgs): OneOfArgs<S> {
     let last_err;
-    for (const name in schemes) {
-        const scheme = schemes[name];
+    let idx = 0;
+    for (const scheme of schemes) {
         try {
-            return [name, singleValidateInto(scheme, args)] as unknown as OneOfArgs<S>;
+            return [idx, singleValidateInto(scheme, args)] as const as OneOfArgs<S>;
         } catch (e) {
             last_err = e;
         }
+        idx += 1;
     }
     throw last_err;
 }
@@ -88,11 +89,9 @@ export type ArgsScheme = {
     readonly options: { readonly [key: `-${string}`]: Pattern; };
 };
 
-export type ArgsSchemes = {
-    readonly [name: string]: ArgsScheme;
-};
+export type ArgsSchemes = readonly ArgsScheme[];
 
-export type OneOfArgs<S extends ArgsSchemes> = { [name in keyof S]: [name, Args<S[name]>] }[keyof S];
+export type OneOfArgs<S extends ArgsSchemes> = S extends readonly [...infer H extends readonly ArgsScheme[], infer X extends ArgsScheme] ? OneOfArgs<H> | readonly [H["length"], Args<X>] : never;
 
 export type Args<T extends ArgsScheme> = {
     positional: Match<T["positional"]>;

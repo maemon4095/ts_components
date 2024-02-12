@@ -7,7 +7,7 @@ import { ArgsScheme } from "./scheme.ts";
 import * as pat from "./patterns.ts";
 import { ArgsSchemes } from "./scheme.ts";
 
-Deno.test("type", () => {
+Deno.test("Args", () => {
     const scheme = {
         positional: ["subcommand", pat.optional(pat.url)],
         options: {
@@ -28,6 +28,34 @@ Deno.test("type", () => {
             "-d": number;
         };
     };
+
+    assertType<IsExact<T, E>>(true);
+});
+
+
+Deno.test("OneOfArgs", () => {
+    const scheme = [
+        {
+            positional: ["subcommand", pat.optional(pat.url)],
+            options: {
+                "-a": pat.optional(pat.url),
+                "-b": pat.choice("a", pat.url),
+                "-c": pat.str,
+                "-d": pat.int
+            }
+        }
+    ] as const satisfies mod.ArgsSchemes;
+
+    type T = mod.OneOfArgs<typeof scheme>;
+    type E = readonly [0, {
+        positional: ["subcommand", URL | null];
+        options: {
+            "-a": URL | null,
+            "-b": "a" | URL,
+            "-c": string,
+            "-d": number;
+        };
+    }];
 
     assertType<IsExact<T, E>>(true);
 });
@@ -73,12 +101,12 @@ Deno.test("singleValidateInto", () => {
 
 
 Deno.test("validateInto", () => {
-    const scheme = {
-        case0: {
+    const scheme = [
+        {
             positional: ["command", pat.optional(pat.url)],
             options: {}
         },
-        case1: {
+        {
             positional: ["subcommand", pat.optional(pat.url)],
             options: {
                 "-a": pat.optional(pat.url),
@@ -86,14 +114,13 @@ Deno.test("validateInto", () => {
                 "-c": pat.str,
                 "-d": pat.int
             }
-        }
-    } as const satisfies ArgsSchemes;
+        }] as const satisfies ArgsSchemes;
 
     const raw = rawParse(["subcommand", "-b=a", "-c=str", "-d=0"]);
 
     const result = mod.validateInto(scheme, raw);
 
-    assertEquals(result, ["case1", {
+    assertEquals(result, [1, {
         positional: ["subcommand", null],
         options: {
             "-a": null,
