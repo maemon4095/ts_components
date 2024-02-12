@@ -20,7 +20,7 @@ export class StringLiteralExpectedError extends Error {
         this.message = `\`${literal}\` was expected`;
     }
 }
-
+// TODO: enrich error message
 export function singleValidateInto<S extends ArgsScheme>(scheme: S, args: RawArgs): Args<S> {
     const { positional: positionalScheme, options: optionsScheme } = scheme;
     const { positional, options } = args;
@@ -50,7 +50,7 @@ export function singleValidateInto<S extends ArgsScheme>(scheme: S, args: RawArg
 
     for (const option of optionKeys) {
         if (!(option in optionsScheme)) {
-            throw new Error();
+            throw new UnknownOptionError();
         }
         optionsOut[option] = matches(optionsScheme[option as `-${string}`], options[option]);
     }
@@ -59,6 +59,10 @@ export function singleValidateInto<S extends ArgsScheme>(scheme: S, args: RawArg
         positional: positionalOut,
         options: optionsOut
     } as Args<S>;
+}
+
+export class UnknownOptionError extends Error {
+
 }
 
 export function validateInto<S extends ArgsSchemes>(schemes: S, args: RawArgs): OneOfArgs<S> {
@@ -89,9 +93,11 @@ export type ArgsScheme = {
     readonly options: { readonly [key: `-${string}`]: Pattern; };
 };
 
-export type ArgsSchemes = readonly ArgsScheme[];
+export type ArgsSchemes = readonly [ArgsScheme, ...readonly ArgsScheme[]];
 
-export type OneOfArgs<S extends ArgsSchemes> = S extends readonly [...infer H extends readonly ArgsScheme[], infer X extends ArgsScheme] ? OneOfArgs<H> | readonly [H["length"], Args<X>] : never;
+export type OneOfArgs<S extends ArgsSchemes> = OneOfArgsAux<S>;
+
+type OneOfArgsAux<S extends readonly ArgsScheme[]> = S extends readonly [...infer H extends readonly ArgsScheme[], infer X extends ArgsScheme] ? OneOfArgsAux<H> | readonly [H["length"], Args<X>] : never;
 
 export type Args<T extends ArgsScheme> = {
     positional: Match<T["positional"]>;
@@ -111,5 +117,5 @@ type Joined<A extends readonly Pattern[]> = A extends readonly [infer X extends 
 type MatchAtom<T extends Pattern> =
     T extends string ? T :
     T extends (arg: string) => infer X ?
-    /**/ ((arg: string | null | undefined) => X) extends T ? X : never // to prevent passing unintended functions. Example below.
+    /**/ ((arg: string | null | undefined) => X) extends T ? X : never // to prevent passing unintended functions
     : never;

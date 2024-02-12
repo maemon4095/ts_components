@@ -114,7 +114,8 @@ Deno.test("validateInto", () => {
                 "-c": pat.str,
                 "-d": pat.int
             }
-        }] as const satisfies ArgsSchemes;
+        }
+    ] as const satisfies ArgsSchemes;
 
     const raw = rawParse(["subcommand", "-b=a", "-c=str", "-d=0"]);
 
