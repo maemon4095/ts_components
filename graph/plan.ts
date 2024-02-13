@@ -1,7 +1,7 @@
 import { DirectedAcyclicGraph, NodeId } from "./graphs.ts";
 
 export interface Plan<N extends NodeId> {
-    next(done: N | undefined): { done: boolean, value: N[]; };
+    next(done: N | undefined): { done: false, value: N[]; } | { done: true; };
 }
 
 export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Plan<N> {
@@ -27,9 +27,12 @@ export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Pl
             this.#deps = depsClone as DirectedAcyclicGraph<N>;
         }
 
-        next(done: N | undefined) {
+        next(done: N | undefined): { done: false, value: N[]; } | { done: true; } {
             if (done === undefined) {
-                return { done: roots.length === 0, value: roots };
+                if (roots.length === 0) {
+                    return { done: true };
+                }
+                return { done: false, value: roots };
             }
 
             if (this.#deps[done]?.size !== 0) {
@@ -37,6 +40,10 @@ export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Pl
                 throw new InvalidOrderExecutionError(done);
             }
             delete this.#deps[done]; // 完了したタスクを削除
+
+            if (Object.keys(this.#deps).length === 0) {
+                return { done: true };
+            }
 
             const candidates = dependants[done];
             const value: N[] = [];
@@ -49,7 +56,7 @@ export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Pl
                     }
                 }
             }
-            return { done: Object.keys(this.#deps).length === 0, value };
+            return { done: false, value };
         }
     };
 }
