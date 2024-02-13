@@ -90,7 +90,7 @@ export class UnexpectetPositionalArgumentError extends Error {
 export type Pattern = string | ((arg: string | undefined | null) => unknown);
 export type ArgsScheme = {
     readonly positional: Pattern | readonly Pattern[];
-    readonly options: { readonly [key: `-${string}`]: Pattern; };
+    readonly options: { readonly [key: `-${string}`]: Pattern; }; // TODO: options も複数のパターンをとれるようにする．
 };
 
 export type ArgsSchemes = readonly [ArgsScheme, ...readonly ArgsScheme[]];

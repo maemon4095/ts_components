@@ -131,3 +131,25 @@ Deno.test("validateInto", () => {
         }
     }]);
 });
+
+
+Deno.test("option contain multiple equals", () => {
+    const scheme = [
+        {
+            positional: [],
+            options: {
+                "--cache-from": pat.str
+            }
+        }
+    ] as const satisfies ArgsSchemes;
+
+    const raw = rawParse(["--cache-from=type=local,src=/tmp/.buildx-cache"]);
+    const result = mod.validateInto(scheme, raw);
+
+    assertEquals(result, [0, {
+        positional: [],
+        options: {
+            "--cache-from": "type=local,src=/tmp/.buildx-cache"
+        }
+    }]);
+});

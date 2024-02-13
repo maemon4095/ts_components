@@ -14,12 +14,15 @@ export function rawParse(args: string[]): RawArgs {
 
     for (const arg of args) {
         if (arg.startsWith("-")) {
-            const [key, value] = arg.split("=", 2);
-            if (value === undefined) {
-                options[key] = null;
-            } else {
-                options[key] = value;
+            const idx = arg.indexOf("=");
+            if (idx < 0) {
+                options[arg] = null;
+                break;
             }
+
+            const key = arg.substring(0, idx);
+            const value = arg.substring(idx + 1);
+            options[key] = value;
         } else {
             positional.push(arg);
         }
