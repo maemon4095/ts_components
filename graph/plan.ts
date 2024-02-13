@@ -1,7 +1,7 @@
 import { DirectedAcyclicGraph, NodeId } from "./graphs.ts";
 
 export interface Plan<N extends NodeId> {
-    next(done: N | undefined): { done: false, value: N[]; } | { done: true; };
+    next(done: N | undefined): { done: false, value: N[]; } | { done: true; value: undefined; };
 }
 
 export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Plan<N> {
@@ -27,10 +27,10 @@ export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Pl
             this.#deps = depsClone as DirectedAcyclicGraph<N>;
         }
 
-        next(done: N | undefined): { done: false, value: N[]; } | { done: true; } {
+        next(done: N | undefined): { done: false, value: N[]; } | { done: true; value: undefined; } {
             if (done === undefined) {
                 if (roots.length === 0) {
-                    return { done: true };
+                    return { done: true, value: undefined };
                 }
                 return { done: false, value: roots };
             }
@@ -42,7 +42,7 @@ export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Pl
             delete this.#deps[done]; // 完了したタスクを削除
 
             if (Object.keys(this.#deps).length === 0) {
-                return { done: true };
+                return { done: true, value: undefined };
             }
 
             const candidates = dependants[done];
