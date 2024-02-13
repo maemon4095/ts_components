@@ -9,10 +9,8 @@ export function createPlan<N extends NodeId>(graph: DirectedAcyclicGraph<N>): Pl
     const roots: N[] = [];
     const depsClone: { [name in N]?: Set<N>; } = {};
     const dependants: { [name in N]?: Set<N>; } = {};
-    let _nodeCnt = 0;
     for (const node in graph) {
         const ds = graph[node];
-        _nodeCnt += 1;
         depsClone[node] = new Set(ds);
         if (ds.size === 0) {
             roots.push(node);
