@@ -1,5 +1,5 @@
 import { assertEquals, assert } from "https://deno.land/std@0.211.0/assert/mod.ts";
-import { coalesce } from "../coalesce.ts";
+import { coalesce } from "./coalesce.ts";
 
 
 Deno.test("coalesce", async (ctx) => {
