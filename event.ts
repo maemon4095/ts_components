@@ -1,20 +1,7 @@
-const INTERNAL_GET_KEY: unique symbol = Symbol();
-
-export class Subscription {
-    #key;
-    constructor(key: symbol) {
-        this.#key = key;
-    }
-
-    [INTERNAL_GET_KEY](): symbol {
-        return this.#key;
-    }
-}
-
+export type Unsubscriber = () => void;
 export type Listener<T> = (v: T) => void;
 export type EventSubscriber<T> = {
-    subscribe(listener: Listener<T>): Subscription;
-    unsubscribe(subscription: Subscription): void;
+    subscribe(listener: Listener<T>): Unsubscriber;
 };
 
 export class EventHub<T> implements EventSubscriber<T> {
@@ -30,13 +17,11 @@ export class EventHub<T> implements EventSubscriber<T> {
         }
     }
 
-    subscribe(listener: Listener<T>) {
+    subscribe(listener: Listener<T>): Unsubscriber {
         const key = Symbol();
         this.#subs[key] = listener;
-        return new Subscription(key);
-    }
-
-    unsubscribe(subscription: Subscription) {
-        delete this.#subs[subscription[INTERNAL_GET_KEY]()];
+        return () => {
+            delete this.#subs[key];
+        };
     }
 }
