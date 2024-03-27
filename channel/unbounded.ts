@@ -1,4 +1,4 @@
-import { ListQueue } from "./ListQueue.ts";
+import { ListQueue } from "../collections/mod.ts";
 import { Sender, Receiver } from "./channel.ts";
 import { ChannelClosedError } from "./error.ts";
 
