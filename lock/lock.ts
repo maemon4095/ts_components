@@ -1,13 +1,13 @@
 import { ListQueue } from "../collections/mod.ts";
 
 export class SimpleLock {
-    readonly #waitings = new ListQueue<{ resolve: (v: void) => void; reject: (e: unknown) => void; }>();
+    readonly #waitings = new ListQueue<(v: void) => void>();
     #locked = false;
 
     async acquire() {
         if (this.#locked) {
-            await new Promise((resolve, reject) => {
-                this.#waitings.enqueue({ resolve, reject });
+            await new Promise((resolve) => {
+                this.#waitings.enqueue(resolve);
             });
         } else {
             this.#locked = true;
@@ -21,7 +21,7 @@ export class SimpleLock {
         if (this.#waitings.isEmpty) {
             this.#locked = false;
         } else {
-            const { resolve } = this.#waitings.dequeue()!;
+            const resolve = this.#waitings.dequeue()!;
             resolve();
         }
     }
