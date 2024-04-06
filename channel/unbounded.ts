@@ -1,11 +1,39 @@
 import { ListQueue } from "../collections/mod.ts";
-import { Sender, Receiver } from "./channel.ts";
+import { Result } from "../monadic/mod.ts";
+import { Sender, Receiver, TryReceiveError, TrySendError } from "./channel.ts";
 import { ChannelClosedError } from "./error.ts";
+import { fireAndForget } from "./util.ts";
 
 export function unbounded<T>(): [Sender<T>, Receiver<T>] {
     const items = new ListQueue<T>();
     const waitings = new ListQueue<{ resolve: (value: T) => void; reject: () => void; }>();
     let closed = false;
+
+    function trySend(value: T): Result<void, TrySendError> {
+        if (closed) {
+            return { isOk: false, err: "closed" };
+        }
+
+        if (waitings.isEmpty) {
+            items.enqueue(value);
+        } else {
+            const { resolve } = waitings.dequeue()!;
+            fireAndForget(() => resolve(value));
+        }
+        return { isOk: true, value: undefined };
+    }
+
+    function tryReceive(): Result<T, TryReceiveError> {
+        if (closed) {
+            if (items.isEmpty) return { isOk: false, err: "closed" };
+        }
+        if (items.isEmpty) {
+            return { isOk: false, err: "empty" };
+        }
+        const value = items.dequeue()!;
+        return { isOk: true, value };
+    }
+
 
     // deno-lint-ignore require-await
     async function send(value: T) {
@@ -17,7 +45,7 @@ export function unbounded<T>(): [Sender<T>, Receiver<T>] {
             items.enqueue(value);
         } else {
             const { resolve } = waitings.dequeue()!;
-            resolve(value);
+            fireAndForget(() => resolve(value));
         }
     }
 
@@ -55,10 +83,12 @@ export function unbounded<T>(): [Sender<T>, Receiver<T>] {
     }
 
     const sender: Sender<T> = {
+        trySend,
         send,
         close
     };
     const receiver: Receiver<T> = {
+        tryReceive,
         receive,
         close
     };
