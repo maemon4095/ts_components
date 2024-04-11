@@ -13,27 +13,31 @@ export class InterruptibleLock {
         } else {
             this.#locked = true;
         }
-    }
-    release() {
-        if (!this.#locked) {
-            return;
-        }
 
-        if (this.#waitings.isEmpty) {
-            this.#locked = false;
-        } else if (this.#interruptionResolve) {
-            const resolve = this.#interruptionResolve;
-            this.#interruptionResolve = undefined;
-            while (true) {
-                const pair = this.#waitings.dequeue();
-                if (pair === null) break;
-                pair.reject(new LockInterruptedError());
+        let released = false;
+        const release = () => {
+            if (released) return;
+            released = true;
+            if (!this.#locked) return;
+            if (this.#waitings.isEmpty) {
+                this.#locked = false;
+            } else if (this.#interruptionResolve) {
+                const resolve = this.#interruptionResolve;
+                this.#interruptionResolve = undefined;
+                while (true) {
+                    const pair = this.#waitings.dequeue();
+                    if (pair === null) break;
+                    pair.reject(new LockInterruptedError());
+                }
+                resolve();
+            } else {
+                const { resolve } = this.#waitings.dequeue()!;
+                resolve();
             }
-            resolve();
-        } else {
-            const { resolve } = this.#waitings.dequeue()!;
-            resolve();
-        }
+        };
+        return {
+            release
+        };
     }
     async interrupt() {
         if (this.#locked) {

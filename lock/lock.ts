@@ -12,17 +12,25 @@ export class SimpleLock {
         } else {
             this.#locked = true;
         }
-    }
-    release() {
-        if (!this.#locked) {
-            return;
-        }
 
-        if (this.#waitings.isEmpty) {
-            this.#locked = false;
-        } else {
-            const resolve = this.#waitings.dequeue()!;
-            resolve();
-        }
+        let released = false;
+        const release = () => {
+            if (released) return;
+            released = true;
+            if (!this.#locked) {
+                return;
+            }
+
+            if (this.#waitings.isEmpty) {
+                this.#locked = false;
+            } else {
+                const resolve = this.#waitings.dequeue()!;
+                resolve();
+            }
+        };
+
+        return {
+            release
+        };
     }
 }
