@@ -1,10 +1,11 @@
 import { ListQueue } from "../collections/mod.ts";
+import { Guard } from "./guard.ts";
 
 export class SimpleLock {
     readonly #waitings = new ListQueue<(v: void) => void>();
     #locked = false;
 
-    async acquire() {
+    async acquire(): Promise<Guard> {
         if (this.#locked) {
             await new Promise((resolve) => {
                 this.#waitings.enqueue(resolve);

@@ -1,11 +1,12 @@
 import { ListQueue } from "../collections/mod.ts";
+import { Guard } from "./guard.ts";
 
 export class InterruptibleLock {
     readonly #waitings = new ListQueue<{ resolve: (v: void) => void; reject: (e: unknown) => void; }>();
     #locked = false;
     #interruptionResolve?: (v: void) => void;
 
-    async acquire() {
+    async acquire(): Promise<Guard> {
         if (this.#locked) {
             await new Promise((resolve, reject) => {
                 this.#waitings.enqueue({ resolve, reject });
