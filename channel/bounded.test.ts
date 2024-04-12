@@ -21,6 +21,32 @@ Deno.test("channel items must received in the same order", () => {
     }
 });
 
+Deno.test("zero size channel items must received in the same order", async () => {
+    const [sender, receiver] = bounded<number>(0);
+    const count = 100;
+    const send = async () => {
+        for (let sent = 0; sent < count; ++sent) {
+            await sender.send(sent);
+        }
+        sender.close();
+    };
+    const receive = async () => {
+        let received = 0;
+        try {
+            while (true) {
+                const item = await receiver.receive();
+                assertEquals(item, received);
+                received++;
+            }
+        } catch (e) {
+            assert(e instanceof ChannelClosedError);
+            assertEquals(received, count);
+        }
+    };
+
+    await Promise.all([receive(), send()]);
+});
+
 Deno.test("ChannelClosedError must be thrown when channel is closed while receiving", () => {
     const [sender, receiver] = bounded<number>(32);
     (async () => {
