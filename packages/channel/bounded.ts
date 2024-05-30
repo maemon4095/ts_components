@@ -1,5 +1,5 @@
 import { ArrayQueue } from "../collections/mod.ts";
-import { Result } from "../monadic/mod.ts";
+import { Result } from "../result/mod.ts";
 import { Sender, Receiver, TryReceiveError, TrySendError } from "./channel.ts";
 import { ChannelClosedError } from "./error.ts";
 import { fireAndForget } from "./util.ts";

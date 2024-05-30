@@ -1,4 +1,4 @@
-import { Result } from "../monadic/mod.ts";
+import { Result } from "../result/mod.ts";
 
 export type TrySendError = "closed" | "full";
 export type TryReceiveError = "closed" | "empty";

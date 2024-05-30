@@ -1,4 +1,4 @@
-import { Err, Ok, Result } from "../monadic/mod.ts";
+import { Err, Ok, Result } from "../result/mod.ts";
 
 export type Comparator<K> = (l: K, r: K) => number;
 
