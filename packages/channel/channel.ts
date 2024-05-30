@@ -1,4 +1,4 @@
-import { Result } from "../result/mod.ts";
+import { Result } from "@maemon4095/result";
 
 export type TrySendError = "closed" | "full";
 export type TryReceiveError = "closed" | "empty";

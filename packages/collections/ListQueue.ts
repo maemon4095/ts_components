@@ -4,11 +4,11 @@ export class ListQueue<T> {
         this.#pair = null;
     }
 
-    get isEmpty() {
+    get isEmpty(): boolean {
         return this.#pair === null;
     }
 
-    enqueue(value: T) {
+    enqueue(value: T): void {
         const node: Node<T> = {
             value: value,
             next: null

@@ -1,5 +1,5 @@
-import { ListQueue } from "../collections/mod.ts";
-import { Result } from "../monadic/mod.ts";
+import { ListQueue } from "@maemon4095/collections";
+import { Result } from "@maemon4095/result";
 import { Sender, Receiver, TryReceiveError, TrySendError } from "./channel.ts";
 import { ChannelClosedError } from "./error.ts";
 import { fireAndForget } from "./util.ts";

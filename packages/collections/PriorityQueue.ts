@@ -8,7 +8,7 @@ export class PriorityQueue<T> {
         this.#entries = [];
     }
 
-    enqueue(value: T) {
+    enqueue(value: T): void {
         const entries = this.#entries;
         let idx = entries.length;
         entries.push(value);

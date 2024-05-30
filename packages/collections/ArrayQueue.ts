@@ -9,15 +9,15 @@ export class ArrayQueue<T> {
         this.#head = 0;
     }
 
-    get count() {
+    get count(): number {
         return this.#count;
     }
 
-    get capacity() {
+    get capacity(): number {
         return this.#buffer.length;
     }
 
-    get isEmpty() {
+    get isEmpty(): boolean {
         return this.#count === 0;
     }
 
@@ -35,7 +35,7 @@ export class ArrayQueue<T> {
         this.#buffer = newbuffer;
     }
 
-    enqueue(item: T) {
+    enqueue(item: T): void {
         if (this.#count == this.capacity) {
             this.#resize();
         }

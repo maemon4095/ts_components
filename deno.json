@@ -1,2 +1,6 @@
 {
+  "imports": {
+    "@maemon4095/collections": "jsr:@maemon4095/collections@0.0",
+    "@maemon4095/result": "jsr:@maemon4095/result@0.0"
+  }
 }

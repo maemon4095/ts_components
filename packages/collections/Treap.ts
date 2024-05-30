@@ -1,4 +1,4 @@
-import { Err, Ok, Result } from "../result/mod.ts";
+import { Err, Ok, Result } from "@maemon4095/result";
 
 export type Comparator<K> = (l: K, r: K) => number;
 
@@ -13,11 +13,11 @@ export class Treap<K, V> {
         });
     }
 
-    search(key: K) {
+    search(key: K): V | undefined {
         return this.#root?.search(this.#comparator, key);
     }
 
-    insert(key: K, value: V) {
+    insert(key: K, value: V): boolean {
         const root = this.#root;
         if (root === undefined) {
             this.#root = new Node(key, value);
