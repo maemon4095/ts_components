@@ -1,10 +1,10 @@
-import { ArrayQueue } from "./ArrayQueue.ts";
+import { ListQueue } from "./mod.ts";
 import { assert, assertEquals } from "https://deno.land/std@0.215.0/assert/mod.ts";
 
-Deno.test("ArrayQueue", () => {
+Deno.test("ListQueue", () => {
     for (let test_nth = 0; test_nth < 100; test_nth++) {
         const count = Math.floor(Math.random() * 100);
-        const queue = new ArrayQueue();
+        const queue = new ListQueue();
         assert(queue.isEmpty);
 
         for (let n = 0; n < count; ++n) {

@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.215.0/assert/mod.ts";
-import { Treap } from "./Treap.ts";
+import { Treap } from "./mod.ts";
 
 Deno.test("inserted items must be found and items not inserted must be missing", () => {
     const test_size = 1000;
